@@ -141,6 +141,26 @@ def update_subject_name():
 
 
 
+@app.route('/admin/subjects/add_question', methods=['POST'])
+def add_question():
+    # Retrieve form data
+    subject_id = request.form.get('subject_id')
+    question_text = request.form.get('question')
+    answer_type = request.form.get('answer_type')
+
+    # Insert the question into the database
+    try:
+        cursor.execute("INSERT INTO questions (subject_id, text, answer_type) VALUES (?, ?, ?)",(subject_id, question_text, answer_type))
+        conn.commit()
+        flash('Question added successfully!', 'success')
+    except Exception as e:
+        conn.rollback()
+        flash('Failed to add question. Please try again.', 'error')
+        print(e)  # Print the error for debugging
+
+    # Redirect back to the admin page
+    return redirect(url_for('admin'))
+
 
 
 if __name__ == '__main__':

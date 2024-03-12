@@ -73,6 +73,40 @@
     </form>
 
 
+    <!-- Form to add questions -->
+    <form action="{{ url_for('add_question') }}" method="post">
+    <!-- <form action="/admin/subjects/add_question" method="post"> -->
+        <label for="subject_id">Subject:</label>
+        <select id="subject_id" name="subject_id">
+            {% for subject in subjects %}
+            <option value="{{ subject.id }}">{{ subject.name }}</option>
+            {% endfor %}
+        </select>
+        <label for="question">Question:</label>
+        <input type="text" id="question" name="question">
+        <label for="answer_type">Answer Type:</label>
+        <select id="answer_type" name="answer_type">
+            <option value="input">Input</option>
+            <option value="select">Select</option>
+        </select>
+        <button type="submit">Add Question</button>
+    </form>
+
+
+    <!-- Feedback messages -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message[1] }}">
+        {{ message[0] }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+
+
+
 
     <!-- Logout button -->
     <form action="/logout" method="GET">
@@ -82,11 +116,17 @@
 </body>
 
 
+
+
+
+
+
+
 <script>
     function toggleEdit(subjectId) {
         var editForm = document.getElementById('editForm' + subjectId);
         var editInput = document.getElementById('editInput' + subjectId);
-        
+
         if (editForm.style.display === 'none') {
             // Show input field for editing
             editInput.value = ""; // Clear the input field
