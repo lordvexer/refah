@@ -112,11 +112,10 @@ def remove_subject(subject_id):
     # Redirect to the login page if not logged in or not an admin
     return redirect(url_for('index'))
 
-
 @app.route('/admin/subjects/update_status', methods=['POST'])
 def update_subject_status():
     # Retrieve form data
-    subject_id = request.form.get('subject.id')
+    subject_id = request.form.get('subject_id')
     new_status = request.form.get('new_status')
 
     # Update the status of the subject in the database
@@ -125,6 +124,7 @@ def update_subject_status():
 
     # Redirect back to the admin page
     return redirect(url_for('admin'))
+
 
 @app.route('/admin/subjects/update_name', methods=['POST'])
 def update_subject_name():
@@ -147,13 +147,21 @@ def add_question():
     subject_id = request.form.get('subject_id')
     question_text = request.form.get('question')
     answer_type = request.form.get('answer_type')
-    question_id = request.form.get('question_id')
+    options = request.form.getlist('select_options[]')  # Retrieve the array of options
 
-    # Insert the question into the database
     try:
-        cursor.execute("INSERT INTO questions (subject_id, text, answer_type) VALUES (?, ?, ?)",(subject_id, question_text, answer_type))
-        cursor.execute("INSERT INTO selects (question_id, text) VALUES (?, ?, ?)",(question_id, question_text))
+        # Insert the question into the database
+        cursor.execute("INSERT INTO questions (subject_id, text, answer_type) OUTPUT INSERTED.id VALUES (?, ?, ?)",
+                       (subject_id, question_text, answer_type))
+        question_id = cursor.fetchone()[0]  # Fetch the last inserted question ID
         conn.commit()
+
+        # Insert each option into the question_options table
+        for option in options:
+            cursor.execute("INSERT INTO question_options (question_id, option_text) VALUES (?, ?)",
+                           (question_id, option))
+        conn.commit()
+
         flash('Question added successfully!', 'success')
     except Exception as e:
         conn.rollback()
@@ -162,6 +170,8 @@ def add_question():
 
     # Redirect back to the admin page
     return redirect(url_for('admin'))
+
+
 
 
 

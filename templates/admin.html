@@ -146,7 +146,7 @@
 <script>
     // Function to toggle visibility of select options container based on answer type
     function toggleSelectOptions() {
-        var answerType = document.getElementById('answer_type').value;
+        var answerType = document.getElementById('answer_type').selectedOptions[0].value;
         var selectOptionsContainer = document.getElementById('selectOptions');
         if (answerType === 'select') {
             selectOptionsContainer.style.display = 'block';
@@ -169,28 +169,5 @@
     }
 </script>
 
-<script>
-    function addOption() {
-  var container = document.getElementById('selectOptionsContainer');
-  
-  // Create a new div to hold the option details (label and input)
-  var optionDiv = document.createElement('div');
-  
-  // Create a label element for the option
-  var label = document.createElement('label');
-  label.innerHTML = "Option:";
-  optionDiv.appendChild(label);
-  
-  // Create an input element for entering the option text
-  var input = document.createElement('input');
-  input.type = 'text';
-  input.name = 'select_options[]'; // Use array notation to handle multiple options
-  input.placeholder = 'Option';
-  optionDiv.appendChild(input);
-  
-  // Add the entire option div to the container
-  container.appendChild(optionDiv);
-}
 
-</script>
 </html>
