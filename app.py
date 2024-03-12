@@ -70,7 +70,7 @@ def logout():
 
 
 
-@app.route('s', methods=['POST'])
+@app.route('/admin/subjects/add', methods=['POST'])
 def add_subject():
     if request.method == 'POST':
         # Retrieve subject name from the form
@@ -115,22 +115,30 @@ def remove_subject(subject_id):
 
 @app.route('/admin/subjects/update_status', methods=['POST'])
 def update_subject_status():
-    # Handle form submission to update subject status (activate/deactivate)
-    # Parse form data and update database accordingly
-    pass
+    # Retrieve form data
+    subject_id = request.form.get('subject.id')
+    new_status = request.form.get('new_status')
 
-# Functions for database operations
-def add_subject_to_db(subject_name):
-    # Insert the new subject into the database
-    pass
-
-def remove_subject_from_db(subject_id):
-    # Delete the subject from the database
-    pass
-
-def update_subject_status_in_db(subject_id, status):
     # Update the status of the subject in the database
-    pass
+    cursor.execute("UPDATE subjects SET status = ? WHERE id = ?", (new_status, subject_id))
+    conn.commit()
+
+    # Redirect back to the admin page
+    return redirect(url_for('admin'))
+
+@app.route('/admin/subjects/update_name', methods=['POST'])
+def update_subject_name():
+    # Retrieve form data
+    subject_id = request.form.get('subject_id')  # Fix the typo here
+    new_name = request.form.get('new_name')
+
+    # Update the name of the subject in the database
+    cursor.execute("UPDATE subjects SET name = ? WHERE id = ?", (new_name, subject_id))
+    conn.commit()
+
+    # Redirect back to the admin page
+    return redirect(url_for('admin'))
+
 
 
 

@@ -1,17 +1,18 @@
 <!-- admin.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
 </head>
+
 <body>
     <h1>Welcome to the Admin Panel</h1>
     <table>
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -20,24 +21,41 @@
         <tbody>
             {% for subject in subjects %}
             <tr>
-                <td>{{ subject.id }}</td>
                 <td>{{ subject.name }}</td>
-                <td>{{ subject.status }}</td>
+                <td>{% if subject.status == 1 %}
+                    Active
+                    {% else %}
+                    Not Active
+                    {% endif %}
+                </td>
                 <td>
                     <!-- Edit button -->
-                    <a href="/edit_subject/{{ subject.id }}">Edit</a>
+                    <a href="#" onclick="toggleEdit('{{ subject.id }}')">Edit</a>
+                    <!-- Input field for renaming subject (initially hidden) -->
+                    <form id="editForm{{ subject.id }}" action="/admin/subjects/update_name" method="post"
+                        style="display: none;">
+                        <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                        <input type="text" id="editInput{{ subject.id }}" name="new_name">
+                        <button type="submit">Save</button>
+                    </form>
+
                     <!-- Remove button -->
                     <form action="/remove_subject/{{ subject.id }}" method="post">
                         <button type="submit">Remove</button>
                     </form>
+
                     <!-- Activate/Deactivate button -->
-                    {% if subject.status == 'Active' %}
-                    <form action="/deactivate_subject/{{ subject.id }}" method="post">
-                        <button type="submit">Deactivate</button>
+                    {% if subject.status == 0 %}
+                    <form action="/admin/subjects/update_status" method="post">
+                        <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                        <input type="hidden" name="new_status" value="1">
+                        <button type="submit">Activate</button>
                     </form>
                     {% else %}
-                    <form action="/activate_subject/{{ subject.id }}" method="post">
-                        <button type="submit">Activate</button>
+                    <form action="/admin/subjects/update_status" method="post">
+                        <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                        <input type="hidden" name="new_status" value="0">
+                        <button type="submit">Deactivate</button>
                     </form>
                     {% endif %}
                 </td>
@@ -53,5 +71,31 @@
         <input type="text" id="subject_name" name="subject_name">
         <button type="submit">Add Subject</button>
     </form>
+
+
+
+    <!-- Logout button -->
+    <form action="/logout" method="GET">
+        <button type="submit">Logout</button>
+    </form>
+
 </body>
+
+
+<script>
+    function toggleEdit(subjectId) {
+        var editForm = document.getElementById('editForm' + subjectId);
+        var editInput = document.getElementById('editInput' + subjectId);
+        
+        if (editForm.style.display === 'none') {
+            // Show input field for editing
+            editInput.value = ""; // Clear the input field
+            editForm.style.display = 'block';
+        } else {
+            // Hide input field
+            editForm.style.display = 'none';
+        }
+    }
+</script>
+
 </html>
