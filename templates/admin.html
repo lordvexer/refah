@@ -73,9 +73,7 @@
     </form>
 
 
-    <!-- Form to add questions -->
     <form action="{{ url_for('add_question') }}" method="post">
-    <!-- <form action="/admin/subjects/add_question" method="post"> -->
         <label for="subject_id">Subject:</label>
         <select id="subject_id" name="subject_id">
             {% for subject in subjects %}
@@ -89,6 +87,14 @@
             <option value="input">Input</option>
             <option value="select">Select</option>
         </select>
+
+        <!-- Container for select options (initially hidden) -->
+        <div id="selectOptions" style="display: none;">
+            <label for="select_options">Select Options:</label>
+            <div id="selectOptionsContainer">
+            </div>
+            <button type="button" onclick="addOption()">Add Option</button>
+        </div>
         <button type="submit">Add Question</button>
     </form>
 
@@ -137,5 +143,54 @@
         }
     }
 </script>
+<script>
+    // Function to toggle visibility of select options container based on answer type
+    function toggleSelectOptions() {
+        var answerType = document.getElementById('answer_type').value;
+        var selectOptionsContainer = document.getElementById('selectOptions');
+        if (answerType === 'select') {
+            selectOptionsContainer.style.display = 'block';
+        } else {
+            selectOptionsContainer.style.display = 'none';
+        }
+    }
 
+    // Event listener to toggle select options container visibility on answer type change
+    document.getElementById('answer_type').addEventListener('change', toggleSelectOptions);
+
+    // Function to add input fields for select options
+    function addOption() {
+        var container = document.getElementById('selectOptionsContainer');
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'select_options[]'; // Use array notation to handle multiple options
+        input.placeholder = 'Option';
+        container.appendChild(input);
+    }
+</script>
+
+<script>
+    function addOption() {
+  var container = document.getElementById('selectOptionsContainer');
+  
+  // Create a new div to hold the option details (label and input)
+  var optionDiv = document.createElement('div');
+  
+  // Create a label element for the option
+  var label = document.createElement('label');
+  label.innerHTML = "Option:";
+  optionDiv.appendChild(label);
+  
+  // Create an input element for entering the option text
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.name = 'select_options[]'; // Use array notation to handle multiple options
+  input.placeholder = 'Option';
+  optionDiv.appendChild(input);
+  
+  // Add the entire option div to the container
+  container.appendChild(optionDiv);
+}
+
+</script>
 </html>

@@ -147,10 +147,12 @@ def add_question():
     subject_id = request.form.get('subject_id')
     question_text = request.form.get('question')
     answer_type = request.form.get('answer_type')
+    question_id = request.form.get('question_id')
 
     # Insert the question into the database
     try:
         cursor.execute("INSERT INTO questions (subject_id, text, answer_type) VALUES (?, ?, ?)",(subject_id, question_text, answer_type))
+        cursor.execute("INSERT INTO selects (question_id, text) VALUES (?, ?, ?)",(question_id, question_text))
         conn.commit()
         flash('Question added successfully!', 'success')
     except Exception as e:
