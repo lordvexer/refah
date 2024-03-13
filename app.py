@@ -143,23 +143,29 @@ def update_subject_name():
 
 @app.route('/admin/subjects/add_question', methods=['POST'])
 def add_question():
-    # Retrieve form data
     subject_id = request.form.get('subject_id')
     question_text = request.form.get('question')
     answer_type = request.form.get('answer_type')
-    options = request.form.getlist('select_options[]')  # Retrieve the array of options
+    options = request.form.getlist('option[]')
 
     try:
         # Insert the question into the database
-        cursor.execute("INSERT INTO questions (subject_id, text, answer_type) OUTPUT INSERTED.id VALUES (?, ?, ?)",
+        cursor.execute("INSERT INTO questions (subject_id, text, answer_type) VALUES (?, ?, ?)",
                        (subject_id, question_text, answer_type))
-        question_id = cursor.fetchone()[0]  # Fetch the last inserted question ID
-        conn.commit()
+        
+        if answer_type == 'select':
+            # Commit the transaction to ensure the new question is added to the database
+            conn.commit()
 
-        # Insert each option into the question_options table
-        for option in options:
-            cursor.execute("INSERT INTO question_options (question_id, option_text) VALUES (?, ?)",
-                           (question_id, option))
+            # Get the ID of the newly inserted question
+            cursor.execute("SELECT @@IDENTITY")
+            question_id = cursor.fetchone()[0]
+            # Insert options into the options table
+            for option_text in options:
+                cursor.execute("INSERT INTO options (question_id, text) VALUES (?, ?)",
+                               (question_id, option_text))
+        
+        # Commit the transaction
         conn.commit()
 
         flash('Question added successfully!', 'success')
@@ -168,8 +174,14 @@ def add_question():
         flash('Failed to add question. Please try again.', 'error')
         print(e)  # Print the error for debugging
 
-    # Redirect back to the admin page
     return redirect(url_for('admin'))
+
+
+
+
+
+
+
 
 
 

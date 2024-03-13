@@ -58,6 +58,9 @@
                         <button type="submit">Deactivate</button>
                     </form>
                     {% endif %}
+
+                    <!-- Button to show questions for this subject -->
+                    <button onclick="toggleQuestions('{{ subject.id }}')">Show Questions</button>
                 </td>
             </tr>
             {% endfor %}
@@ -72,32 +75,45 @@
         <button type="submit">Add Subject</button>
     </form>
 
-
-    <form action="{{ url_for('add_question') }}" method="post">
-        <label for="subject_id">Subject:</label>
-        <select id="subject_id" name="subject_id">
-            {% for subject in subjects %}
-            <option value="{{ subject.id }}">{{ subject.name }}</option>
+    <!-- List of questions for each subject (initially hidden) -->
+    {% for subject in subjects %}
+    <div id="questions{{ subject.id }}" style="display: none;">
+        <h3>Questions for {{ subject.name }}</h3>
+        <ul>
+            {% for question in subject.questions %}
+            <li>{{ question.text }}</li>
+            <!-- Add edit and remove buttons for each question -->
+            <button onclick="editQuestion('{{ question.id }}')">Edit</button>
+            <form action="/remove_question/{{ question.id }}" method="post">
+                <button type="submit">Remove</button>
+            </form>
             {% endfor %}
-        </select>
-        <label for="question">Question:</label>
-        <input type="text" id="question" name="question">
-        <label for="answer_type">Answer Type:</label>
-        <select id="answer_type" name="answer_type">
-            <option value="input">Input</option>
-            <option value="select">Select</option>
-        </select>
+        </ul>
+        <!-- Form to add a new question -->
+        <form action="/admin/subjects/add_question" method="post">
+            <input type="hidden" name="subject_id" value="{{ subject.id }}">
+            <label for="new_question">New Question:</label>
+            <input type="text" id="text" name="question">
 
-        <!-- Container for select options (initially hidden) -->
-        <div id="selectOptions" style="display: none;">
-            <label for="select_options">Select Options:</label>
-            <div id="selectOptionsContainer">
+            <label for="answer_type">Answer Type:</label>
+            <select id="answer_type" name="answer_type">
+                <option value="input">Input</option>
+                <option value="select">Select</option>
+            </select>
+
+            <!-- Container for select options (initially hidden) -->
+            <div id="selectOptions" style="display: none;">
+                <label for="select_options">Select Options:</label>
+                <div id="optionsContainer">
+                    <!-- Additional options will be added dynamically here -->
+                </div>
+                <button type="button" onclick="addOption()">Add Option</button>
             </div>
-            <button type="button" onclick="addOption()">Add Option</button>
-        </div>
-        <button type="submit">Add Question</button>
-    </form>
 
+            <button type="submit">Add Question</button>
+        </form>
+    </div>
+    {% endfor %}
 
     <!-- Feedback messages -->
     {% with messages = get_flashed_messages() %}
@@ -110,64 +126,89 @@
     {% endif %}
     {% endwith %}
 
-
-
-
-
     <!-- Logout button -->
     <form action="/logout" method="GET">
         <button type="submit">Logout</button>
     </form>
 
+    <script>
+        function toggleEdit(subjectId) {
+            var editForm = document.getElementById('editForm' + subjectId);
+            var editInput = document.getElementById('editInput' + subjectId);
+
+            if (editForm.style.display === 'none') {
+                // Show input field for editing
+                editInput.value = ""; // Clear the input field
+                editForm.style.display = 'block';
+            } else {
+                // Hide input field
+                editForm.style.display = 'none';
+            }
+        }
+
+        function toggleQuestions(subjectId) {
+            var questionsDiv = document.getElementById('questions' + subjectId);
+            if (questionsDiv.style.display === 'none') {
+                questionsDiv.style.display = 'block';
+            } else {
+                questionsDiv.style.display = 'none';
+            }
+        }
+    </script>
+
+    <script>
+        // Function to toggle visibility of select options container based on answer type
+        function toggleSelectOptions() {
+            var answerType = document.getElementById('answer_type').value;
+            var selectOptionsContainer = document.getElementById('selectOptions');
+            if (answerType === 'select') {
+                selectOptionsContainer.style.display = 'block';
+            } else {
+                selectOptionsContainer.style.display = 'none';
+            }
+        }
+
+        // Function to add input fields for additional options
+        function addOption() {
+            var optionsContainer = document.getElementById('optionsContainer');
+            var newOptionInput = document.createElement('input');
+            newOptionInput.type = 'text';
+            newOptionInput.name = 'option[]'; // Use array notation to handle multiple options
+            newOptionInput.placeholder = 'Option';
+            optionsContainer.appendChild(newOptionInput);
+        }
+
+        // Event listener to toggle select options container visibility on answer type change
+        document.getElementById('answer_type').addEventListener('change', function () {
+            toggleSelectOptions();
+
+            // If answer type is 'select', add the question to the database first
+            var answerType = this.value;
+            if (answerType === 'select') {
+                addQuestionToDatabase();
+            }
+        });
+
+        // Function to add the question to the database
+        function addQuestionToDatabase() {
+            var subjectId = document.querySelector('input[name="subject_id"]').value;
+            var questionText = document.querySelector('input[name="question"]').value;
+
+            // Send AJAX request to add the question to the database
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/admin/subjects/add_question');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Question added to database successfully!');
+                } else {
+                    console.error('Failed to add question to database.');
+                }
+            };
+            var data = JSON.stringify({ subject_id: subjectId, question: questionText });
+            xhr.send(data);
+        }
+    </script>
 </body>
-
-
-
-
-
-
-
-
-<script>
-    function toggleEdit(subjectId) {
-        var editForm = document.getElementById('editForm' + subjectId);
-        var editInput = document.getElementById('editInput' + subjectId);
-
-        if (editForm.style.display === 'none') {
-            // Show input field for editing
-            editInput.value = ""; // Clear the input field
-            editForm.style.display = 'block';
-        } else {
-            // Hide input field
-            editForm.style.display = 'none';
-        }
-    }
-</script>
-<script>
-    // Function to toggle visibility of select options container based on answer type
-    function toggleSelectOptions() {
-        var answerType = document.getElementById('answer_type').selectedOptions[0].value;
-        var selectOptionsContainer = document.getElementById('selectOptions');
-        if (answerType === 'select') {
-            selectOptionsContainer.style.display = 'block';
-        } else {
-            selectOptionsContainer.style.display = 'none';
-        }
-    }
-
-    // Event listener to toggle select options container visibility on answer type change
-    document.getElementById('answer_type').addEventListener('change', toggleSelectOptions);
-
-    // Function to add input fields for select options
-    function addOption() {
-        var container = document.getElementById('selectOptionsContainer');
-        var input = document.createElement('input');
-        input.type = 'text';
-        input.name = 'select_options[]'; // Use array notation to handle multiple options
-        input.placeholder = 'Option';
-        container.appendChild(input);
-    }
-</script>
-
 
 </html>
